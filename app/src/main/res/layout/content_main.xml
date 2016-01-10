@@ -11,7 +11,7 @@
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
     tools:context="rohan.com.weatherapp.MainActivity"
     tools:showIn="@layout/activity_main"
-                android:background="#fffc970b">
+                android:background="@mipmap/gators">
 
     <TextView
         android:layout_width="wrap_content"
@@ -19,7 +19,7 @@
         android:text="--"
         android:id="@+id/temperatureLabel"
         android:textSize="150sp"
-        android:textColor="@android:color/white"
+        android:textColor="#80ffffff"
         android:layout_alignParentTop="true"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="158dp"
