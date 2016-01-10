@@ -3,6 +3,8 @@ package rohan.com.weatherapp;
 import android.content.Context;
 import android.content.IntentSender;
 import android.graphics.drawable.Drawable;
+import android.location.Address;
+import android.location.Geocoder;
 import android.location.Location;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
@@ -25,6 +27,8 @@ import org.json.JSONObject;
 
 import java.io.IOException;
 import java.net.NetworkInterface;
+import java.util.List;
+import java.util.Locale;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
@@ -52,6 +56,7 @@ public class MainActivity extends AppCompatActivity implements
     private LocationRequest mLocationRequest;
     private double currentLatitude;
     private double currentLongitude;
+    private String stateName;
 
     public static final String TAG = MainActivity.class.getSimpleName();
     CurrentWeatherConditions mCurrentWeatherConditions;
@@ -65,6 +70,7 @@ public class MainActivity extends AppCompatActivity implements
     @Bind(R.id.humidityValue) TextView mHumidityValue;
     @Bind(R.id.refreshImageView) ImageView mRefreshImageView;
     @Bind((R.id.progressBar))ProgressBar mProgressBar;
+    @Bind(R.id.locationLabel) TextView mLocationLabel;
 
 
     @Override
@@ -100,8 +106,11 @@ public class MainActivity extends AppCompatActivity implements
         mRefreshImageView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                getForecast(currentLatitude,currentLongitude);
-
+                try {
+                    getForecast(currentLatitude,currentLongitude);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
 
 
             }
@@ -112,12 +121,18 @@ public class MainActivity extends AppCompatActivity implements
       //  getForecast(currentLatitude,currentLongitude);
     }
 
-    private void getForecast(double latitude , double longitude) {
+    private void getForecast(double latitude , double longitude) throws IOException {
         String apiKey = "48c2396cf6743361ab181b57dbdbfbd6";
 
         if(isNetworkAvailable()) {
             String forecastUrl = "https://api.forecast.io/forecast/" + apiKey + "/" + latitude + "," + longitude;
             Log.d("Rohan",latitude+ ","+longitude + "["+currentLatitude+","+currentLongitude+"]");
+            Geocoder geocoder = new Geocoder(this, Locale.getDefault());
+            List<Address> addresses = geocoder.getFromLocation(latitude, longitude, 1);
+            String cityName = addresses.get(0).getAddressLine(0);
+             stateName = addresses.get(0).getAddressLine(1);
+            String countryName = addresses.get(0).getAddressLine(2);
+            Log.d("Rohan",stateName);
             toggleRefresh();
             OkHttpClient client = new OkHttpClient();
             Request request = new Request.Builder().url(forecastUrl).build();
@@ -200,6 +215,8 @@ public class MainActivity extends AppCompatActivity implements
         mSummaryLabel.setText(mCurrentWeatherConditions.getSummary());
         Drawable drawable = getResources().getDrawable(mCurrentWeatherConditions.getIconId());
         mIconImageView.setImageDrawable(drawable);
+        mLocationLabel.setText(stateName);
+
     }
 
     private CurrentWeatherConditions getCurrentDetails(String jsondata) throws JSONException{
@@ -272,7 +289,11 @@ public class MainActivity extends AppCompatActivity implements
             currentLongitude = location.getLongitude();
 
           //  Toast.makeText(this, currentLatitude + " WORKS " + currentLongitude + "", Toast.LENGTH_LONG).show();
-            getForecast(currentLatitude,currentLongitude);
+            try {
+                getForecast(currentLatitude,currentLongitude);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
     }
 
